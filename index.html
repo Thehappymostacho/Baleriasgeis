@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <!-- Esta meta etiqueta ayuda a asegurar que el navegador interprete el documento como HTML. -->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Valeria!</title>
+
+    <!-- Carga de Tailwind CSS para un estilo moderno y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Carga de la fuente Inter para una mejor legibilidad -->
+    <link href="https://fonts.googleapis.com/css?family=Inter:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Estilos generales del cuerpo y fuente */
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ocupa toda la altura de la ventana */
+            background: linear-gradient(135deg, #ff0066, #ffccff); /* Degradado de fondo vibrante (más rosa/violeta) */
+            overflow: hidden; /* Evita barras de desplazamiento */
+            color: white; /* Color del texto */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* Sombra para el texto para mejor contraste */
+            position: relative; /* Necesario para posicionamiento absoluto de los textos esparcidos */
+        }
+
+        /* Estilos para los textos esparcidos */
+        .scattered-text {
+            position: absolute; /* Posicionamiento absoluto para esparcir el texto */
+            font-size: 2rem; /* Ajustado para más densidad y legibilidad */
+            font-weight: extrabold; /* Negrita extra para que destaque */
+            opacity: 1; /* Completamente visible */
+            pointer-events: none; /* No interactuable */
+            white-space: nowrap; /* Evita que el texto se rompa en varias líneas */
+            color: rgba(255, 255, 255, 0.7); /* Color del texto esparcido con ligera transparencia */
+            animation-name: float-and-rotate; /* Animación normal */
+            animation-iteration-count: infinite; /* Repetición infinita */
+            animation-timing-function: linear; /* Movimiento constante */
+            z-index: 1;
+        }
+
+        /* Animación para el movimiento y rotación de los textos esparcidos */
+        @keyframes float-and-rotate {
+            0% {
+                transform: translate(var(--start-x), var(--start-y)) rotate(var(--start-rot));
+                opacity: 0.7;
+            }
+            50% {
+                opacity: 1; /* Más visible en el punto medio del movimiento */
+            }
+            100% {
+                transform: translate(var(--end-x), var(--end-y)) rotate(var(--end-rot));
+                opacity: 0.7;
+            }
+        }
+
+        /* Clase para la fase de explosión */
+        .exploding-text {
+            /* Transición rápida para el efecto de explosión */
+            transition: transform 1.5s ease-out, opacity 1.5s ease-out;
+            /* Estos valores serán sobrescritos por JS para el movimiento de explosión */
+        }
+    </style>
+
+</head>
+<body class="selection:bg-pink-300 selection:text-pink-900">
+
+    <div id="text-scatter-container"></div> <!-- Contenedor para los textos esparcidos -->
+
+    <script>
+        const textToScatter = "Valeria Arroyo es GEI";
+        const numberOfTexts = 100; // Aumentado para llenar más la pantalla
+        const container = document.getElementById('text-scatter-container');
+        let textElements = []; // Almacenar referencias a los elementos de texto
+
+        // Función para generar un número aleatorio entre min y max
+        function getRandom(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        // Genera y posiciona los textos de forma aleatoria con animación
+        for (let i = 0; i < numberOfTexts; i++) {
+            const textDiv = document.createElement('div');
+            textDiv.textContent = textToScatter;
+            textDiv.classList.add('scattered-text');
+
+            // Define posiciones iniciales y finales para la animación
+            const startX = getRandom(-20, 120) + 'vw'; // Puede empezar ligeramente fuera de la pantalla
+            const startY = getRandom(-20, 120) + 'vh';
+            const endX = getRandom(-20, 120) + 'vw';
+            const endY = getRandom(-20, 120) + 'vh';
+            const startRot = getRandom(-360, 360) + 'deg';
+            const endRot = getRandom(-360, 360) + 'deg';
+
+            // Define la duración y el retraso de la animación para cada texto
+            // Más rápido para la fase inicial de 30 segundos
+            const duration = getRandom(5, 10) + 's';
+            const delay = getRandom(0, 5) + 's';
+
+            // Establece las variables CSS personalizadas para cada animación
+            textDiv.style.setProperty('--start-x', startX);
+            textDiv.style.setProperty('--start-y', startY);
+            textDiv.style.setProperty('--end-x', endX);
+            textDiv.style.setProperty('--end-y', endY);
+            textDiv.style.setProperty('--start-rot', startRot);
+            textDiv.style.setProperty('--end-rot', endRot);
+            textDiv.style.animationDuration = duration;
+            textDiv.style.animationDelay = delay;
+
+            container.appendChild(textDiv);
+            textElements.push(textDiv); // Guarda la referencia
+        }
+
+        /**
+         * Activa la animación de explosión para todos los textos.
+         */
+        function activateExplosion() {
+            textElements.forEach(textDiv => {
+                // Detener la animación actual de flotación
+                textDiv.style.animation = 'none';
+
+                // Forzar un reflow para aplicar el 'animation: none' antes de la transición
+                textDiv.offsetHeight; // Esto es una técnica para forzar que el navegador aplique los cambios de estilo inmediatamente
+
+                // Añadir la clase para la transición de explosión
+                textDiv.classList.add('exploding-text');
+
+                // Establecer el estado final de la explosión
+                const explodeX = getRandom(-200, 300) + 'vw';
+                const explodeY = getRandom(-200, 300) + 'vh';
+                const explodeScale = getRandom(2, 5); // Escala para que se vean más grandes al explotar
+                const explodeRot = getRandom(-720, 720) + 'deg'; // Rotación aleatoria al explotar
+
+                textDiv.style.transform = `translate(${explodeX}, ${explodeY}) scale(${explodeScale}) rotate(${explodeRot})`;
+                textDiv.style.opacity = '0'; // Se desvanecen
+            });
+        }
+
+        // Temporizador para activar la explosión después de 30 segundos
+        const explosionDelay = 30 * 1000; // 30 segundos
+        setTimeout(activateExplosion, explosionDelay);
+
+        // Temporizador para recargar la página después de la explosión (ej. 1.5 segundos después de la explosión)
+        // Asegúrate de que este tiempo sea mayor que la duración de la transición 'exploding-text'
+        const reloadDelay = explosionDelay + 1500; // 30 segundos + 1.5 segundos de explosión
+        setTimeout(() => {
+            location.reload();
+        }, reloadDelay);
+    </script>
+
+</body>
+</html>
